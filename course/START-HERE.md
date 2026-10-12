@@ -1,0 +1,1 @@
+The notebook starts at http://127.0.0.1:8766 after `python3 -m palimpsest serve`. Choose a question or add your own. Save an observation, select a revision, then preview exactly what will be supplied to a model. Open WebUI is optional. The atlas includes unbuilt proposals; see the repository README for current scope.

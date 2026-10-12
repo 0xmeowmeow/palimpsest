@@ -1,0 +1,14 @@
+{
+  "format": "palimpsest-discipline-v1",
+  "source_files": {
+    "WORKING-AGREEMENT.md": "8a4cee2eb9a729303ae9558e99cbb3920320cdd368ba81ebc62ac2c726da5575",
+    "skills/open-loop-learning/SKILL.md": "b93cab5e74614b7cd7e569fe69cea17f693b2264f047696624dd57d967e3cfa6"
+  },
+  "outputs": {
+    "investigate.md": "cfc375b9343acef303477ea819d582c551ebf0fc0f50632fd6f1cdaf76db0063",
+    "direct-help.md": "2ecdb11009bcbfc980d6d58c28c4116f63d506f571c6c0d1e4421c908898f11d",
+    "review.md": "254fe131568f2027a5325c3cfcd13ed19b59625c781473f2799a400f3c7b3f57",
+    "design.md": "84f68035242daac48d452c66af8a97417629736761b16e7b7e4714c16901d753"
+  },
+  "deployment": "prepared; not imported or activated in Open WebUI"
+}

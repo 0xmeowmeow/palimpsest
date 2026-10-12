@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One base — Palimpsest</title>
+<link rel="icon" href="data:,">
+<style>
+:root{--paper:#070e15;--ink:#dcebf1;--muted:#a1bac9;--line:#315365;--accent:#59dcff;--cream:#0b1720;--warm:#ffb36b;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 system-ui,sans-serif}
+main{max-width:1320px;margin:auto;padding:24px 32px 60px}
+.eyebrow{font:10px/1.6 ui-monospace,monospace;letter-spacing:2px;color:var(--accent);text-transform:uppercase}
+h1{font-weight:500;font-size:clamp(28px,3.4vw,44px);letter-spacing:-1.2px;line-height:1.1;margin:8px 0 14px}
+details.prime{border-left:2px solid var(--accent);background:var(--cream);padding:10px 20px;margin:0 0 16px}
+details.prime summary{cursor:pointer;color:var(--accent);font-size:13px}
+.prime dl{display:grid;grid-template-columns:120px 1fr;gap:6px 18px;margin:10px 0 4px;font-size:14px}
+.prime dt{font:10px/2.1 ui-monospace,monospace;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.prime dd{margin:0}
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0;font-size:13px}
+.bar label{color:var(--muted)}
+input,select,textarea{font:inherit;color:var(--ink);background:#060c12;border:1px solid var(--line);border-radius:2px;padding:6px 8px}
+input[type=number]{width:96px}
+button{font:inherit;font-size:13px;cursor:pointer;background:var(--accent);color:#062330;border:1px solid var(--accent);border-radius:2px;padding:6px 11px}
+button.ghost{background:transparent;color:var(--accent);border-color:var(--line)}
+button:disabled{opacity:.4;cursor:default}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+#status{font:12px ui-monospace,monospace;color:var(--muted)}
+#status.ready{color:var(--accent)}#status.error{color:#ff8a7a}
+.howto{display:flex;flex-wrap:wrap;gap:4px 22px;margin:12px 0 0;padding:0;list-style:none;font-size:13px;color:var(--muted)}
+.howto b{color:var(--ink);font-weight:500}
+.panel-title{font:10px/1.6 ui-monospace,monospace;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 4px}
+svg{display:block;width:100%;height:auto}
+#lens{cursor:pointer}
+#svg{cursor:ew-resize;touch-action:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:11px ui-monospace,monospace;color:var(--muted);margin-top:4px}
+.sw{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:22px;margin-top:16px}
+.card{border:1px solid var(--line);background:var(--cream);padding:14px 18px;border-radius:2px;min-width:0}
+.edits{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.edits span{font-size:12px;color:var(--muted);width:100%}
+.quiet{color:var(--muted);font-size:12px}
+textarea{width:100%;min-height:64px}
+footer{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;font-size:12px;color:var(--muted)}
+@media(max-width:860px){main{padding:18px}.grid{grid-template-columns:1fr}.prime dl{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">Palimpsest · loop 01 · Evo 2 7B, computed live</div>
+<h1>Change one base. What does Evo 2 notice?</h1>
+
+<details class="prime" open>
+<summary>Before you play</summary>
+<dl>
+<dt>Why care</dt><dd>Evo 2 is fed DNA one letter at a time. Nothing in its input marks codons, genes or strands.</dd>
+<dt>Testing</dt><dd>When one base changes, what happens to Evo 2's surprise: at that base, next to it, and further along?</dd>
+<dt>What changes</dt><dd>One base, swapped, inserted or deleted. Everything else is identical, and scoring the same sequence twice gives identical numbers.</dd>
+<dt>Watch</dt><dd>The Δ track after the edit, inside and outside the shaded open reading frames.</dd>
+<dt>Possible results</dt><dd>Only the edited base moves · a nearby patch moves, then settles · a shift that lasts until the reading frame ends · different kinds of swap behave differently. Each would mean Evo 2 is tracking something different.</dd>
+</dl>
+</details>
+
+<div class="bar">
+  <span id="status">connecting…</span>
+  <label>Window start <input id="ws" type="number" min="0" step="50" value="1300"></label>
+  <label>Length <select id="wl"><option>200</option><option>300</option><option selected>400</option><option>600</option><option>1000</option><option>1500</option><option>2000</option></select></label>
+  <button id="rescore" class="ghost" disabled>Score window</button>
+  <label>Smooth <select id="smooth"><option value="1">off</option><option value="9" selected>9 bases</option><option value="30">30 bases</option></select></label>
+  <button id="quit" class="ghost">Stop Evo 2 · free the GPU</button>
+</div>
+
+<ol class="howto">
+  <li><b>Move:</b> drag along the long track, click a letter in the 30-base lens, or use ← → (Shift jumps 10). Everything updates as you move.</li>
+  <li><b>Edit:</b> Swap, Insert before, or Delete the chosen base, in the panel below.</li>
+  <li><b>Compare:</b> A is the original, B your edit, Δ the difference, aligned even after insertions and deletions. Hover any bar for its value.</li>
+  <li><b>Stack edits:</b> "Keep B as the new baseline", then edit again.</li>
+  <li><b>Window:</b> change start and length, then Score window. Shorter windows score faster; Evo 2 reads the whole window as context, and repeats are cached.</li>
+</ol>
+
+<div class="panel-title">Lens · 30 bases around the chosen base</div>
+<svg id="lens" viewBox="0 0 1200 360" role="img" aria-label="Thirty-base lens" tabindex="0"></svg>
+
+<div class="panel-title">Whole window · drag to move the lens</div>
+<svg id="svg" viewBox="0 0 1200 330" role="img" aria-label="Surprise tracks for the whole window" tabindex="0"></svg>
+<div class="legend">
+  <span><i class="sw" style="background:#13303f"></i>open reading frame (+ strand, ≥100 codons, found in this window)</span>
+  <span><i class="sw" style="background:#dcebf1"></i>surprise, bits (−log₂ p), clipped at 6</span>
+  <span><i class="sw" style="background:var(--warm)"></i>B more surprised</span>
+  <span><i class="sw" style="background:var(--accent)"></i>B less surprised</span>
+  <span>dashed line: edit · solid line with ▼: chosen base · outlined box: the lens</span>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <div id="selinfo" class="quiet">Waiting for Evo 2…</div>
+    <div class="edits" id="edits"></div>
+    <div id="bsum" class="quiet"></div>
+    <div class="edits"><button id="keep" class="ghost" disabled>Keep B as the new baseline</button><button id="clear" class="ghost" disabled>Clear B</button></div>
+  </div>
+  <div class="card">
+    <label class="quiet" for="guess">Your guess, before you look (optional, stays in this browser)</label>
+    <textarea id="guess"></textarea>
+  </div>
+</div>
+
+<footer>
+  <b>Evidence level: calculated.</b> Evo 2 7B (StripedHyena 2), one forward pass per sequence, bfloat16, full-vocabulary softmax. Repeat scoring was bit-identical on this machine (15 Sep, 1,000 bp). Each value at a position is predicted from the bases before it only; the first base has none. Evo 2 computes the whole window at once in 16-bit floating point, so any change nudges every value slightly, even before the edit (measured 15 Sep: about 0.015 bits per base on average, occasionally up to 0.5). After each edit the page reports that floor. The lens only changes what you see; Evo 2 always reads the whole window. Sequence: <code>ECOLAC</code> from the evo2 package's test prompts. Reading frames are found by a standard-code scan on this page; gene names are not asserted. Every scored sequence is logged in <code>data/loops/01-one-base/runs.jsonl</code>.
+</footer>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const LN2 = Math.log(2), W = 1200, P = 56, CAP = 6, DCAP = 3, LENS = 30, LP = 104;
+const CODE = (() => { const b = 'TCAG', a = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', m = {}; let i = 0; for (const x of b) for (const y of b) for (const z of b) m[x + y + z] = a[i++]; return m; })();
+const AA3 = {A:'Ala',R:'Arg',N:'Asn',D:'Asp',C:'Cys',Q:'Gln',E:'Glu',G:'Gly',H:'His',I:'Ile',L:'Leu',K:'Lys',M:'Met',F:'Phe',P:'Pro',S:'Ser',T:'Thr',W:'Trp',Y:'Tyr',V:'Val','*':'stop'};
+const MONO = 'font-family="ui-monospace,monospace"';
+
+let FULL = '', MAX = 2000, FULLORFS = [];
+const VARIANT = new URLSearchParams(location.search).get('v') || 'default';
+const S = { A: null, Aseq: '', Alabel: '', B: null, Bseq: '', edit: null, sel: null, busy: false, clean: true, ws: 0 };
+
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {});
+  const j = await r.json().catch(() => ({ error: 'unreadable response' }));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+const bits = lp => lp.map(v => v == null ? null : -v / LN2);
+
+function orfs(seq) {
+  const out = [];
+  for (let f = 0; f < 3; f++) {
+    let i = f;
+    while (i + 3 <= seq.length) {
+      if (seq.substr(i, 3) === 'ATG') {
+        let k = i, stop = null;
+        while (k + 3 <= seq.length) { if (CODE[seq.substr(k, 3)] === '*') { stop = k; break; } k += 3; }
+        const end = stop == null ? k : stop + 3;
+        if ((end - i) / 3 >= 100) out.push({ s: i, e: end, open: stop == null });
+        i = end;
+      } else i += 3;
+    }
+  }
+  return out.sort((a, b) => a.s - b.s);
+}
+const orfAt = (list, a) => list.find(o => a >= o.s && a < o.e);
+// Frames come from the whole sequence, so a short window still knows its codons.
+function currentOrfs() {
+  if (!S.clean) return orfs(S.Aseq);
+  const n = S.Aseq.length;
+  return FULLORFS.map(o => ({ s: o.s - S.ws, e: o.e - S.ws, open: o.open })).filter(o => o.e > 0 && o.s < n);
+}
+function ev(type, detail) {
+  try {
+    const body = JSON.stringify({ t: new Date().toISOString(), v: VARIANT, type, detail });
+    if (!navigator.sendBeacon || !navigator.sendBeacon('/event', new Blob([body], { type: 'application/json' })))
+      fetch('/event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true });
+  } catch (e) {}
+}
+function firstStop(seq, s) { for (let k = s; k + 3 <= seq.length; k += 3) if (CODE[seq.substr(k, 3)] === '*') return (k - s) / 3 + 1; return null; }
+
+// B position -> A position (null for an inserted base); A -> B for a reading-frame start.
+function b2a(j, ed) { if (!ed || ed.type === 'sub') return j; if (ed.type === 'ins') return j < ed.pos ? j : (j === ed.pos ? null : j - 1); return j < ed.pos ? j : j + 1; }
+function a2b(a, ed) { if (!ed || ed.type === 'sub') return a; if (ed.type === 'ins') return a < ed.pos ? a : a + 1; return a < ed.pos ? a : a - 1; }
+
+function aligned() {
+  const n = S.Aseq.length, bA = new Array(n).fill(null);
+  if (!S.B) return bA;
+  const bb = bits(S.B.lp);
+  for (let j = 0; j < bb.length; j++) { const a = b2a(j, S.edit); if (a != null && a < n) bA[a] = bb[j]; }
+  return bA;
+}
+function smooth(arr, k) {
+  if (k <= 1) return arr;
+  const h = Math.floor(k / 2), out = new Array(arr.length).fill(null);
+  for (let i = 0; i < arr.length; i++) { let s = 0, c = 0; for (let q = i - h; q <= i + h; q++) { const v = arr[q]; if (q >= 0 && q < arr.length && v != null) { s += v; c++; } } out[i] = c ? s / c : null; }
+  return out;
+}
+function lensRange() {
+  const n = S.Aseq.length; let lo = Math.max(0, S.sel - Math.floor(LENS / 2));
+  lo = Math.min(lo, Math.max(0, n - LENS)); return [lo, Math.min(n, lo + LENS)];
+}
+
+function bars(arr, y0, h, dx, cap, color) {
+  let d = '';
+  arr.forEach((v, i) => { if (v == null) return; const hh = Math.min(v, cap) / cap * h; if (hh > 0.2) d += `M${(P + i * dx).toFixed(2)},${y0 + h}h${Math.max(dx, .6).toFixed(2)}v${(-hh).toFixed(2)}h${(-Math.max(dx, .6)).toFixed(2)}z`; });
+  return `<path d="${d}" fill="${color}"/>`;
+}
+function line(arr, yOf, dx, color, w) {
+  let d = '', pen = false;
+  arr.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${(P + (i + .5) * dx).toFixed(2)},${yOf(v).toFixed(2)}`; pen = true; });
+  return `<path d="${d}" fill="none" stroke="${color}" stroke-width="${w}"/>`;
+}
+
+function draw() {
+  const n = S.Aseq.length; if (!n) return;
+  const dx = (W - P) / n, k = +$('#smooth').value;
+  const ya = 14, yb = 100, yd = 186, h = 70, hd = 110, total = yd + hd + 30;
+  const aB = S.A ? bits(S.A.lp) : [], bA = aligned();
+  const dl = aB.map((v, i) => v != null && bA[i] != null ? bA[i] - v : null);
+  const g = [];
+  for (const o of currentOrfs()) g.push(`<rect x="${P + Math.max(0, o.s) * dx}" y="8" width="${(o.e - o.s) * dx}" height="${yd + hd - 8}" fill="#13303f"/>`);
+  g.push(`<text x="4" y="${ya + 40}" fill="#a1bac9" font-size="12" ${MONO}>A</text>`,
+         `<text x="4" y="${yb + 40}" fill="#a1bac9" font-size="12" ${MONO}>B</text>`,
+         `<text x="4" y="${yd + hd / 2 + 4}" fill="#a1bac9" font-size="12" ${MONO}>Δ B−A</text>`);
+  if (S.A) { g.push(bars(aB, ya, h, dx, CAP, '#dcebf155')); if (k > 1) g.push(line(smooth(aB, k), v => ya + h - Math.min(v, CAP) / CAP * h, dx, '#dcebf1', 1.4)); }
+  if (S.B) { g.push(bars(bA, yb, h, dx, CAP, '#dcebf155')); if (k > 1) g.push(line(smooth(bA, k), v => yb + h - Math.min(v, CAP) / CAP * h, dx, '#dcebf1', 1.4)); }
+  const mid = yd + hd / 2;
+  g.push(`<line x1="${P}" x2="${W}" y1="${mid}" y2="${mid}" stroke="#315365"/>`);
+  if (S.B) {
+    let up = '', dn = '';
+    dl.forEach((v, i) => { if (v == null) return; const hh = Math.min(Math.abs(v), DCAP) / DCAP * (hd / 2); if (hh < .2) return; const x = (P + i * dx).toFixed(2), w = Math.max(dx, .6).toFixed(2); if (v > 0) up += `M${x},${mid}h${w}v${-hh}h-${w}z`; else dn += `M${x},${mid}h${w}v${hh}h-${w}z`; });
+    g.push(`<path d="${up}" fill="#ffb36b88"/><path d="${dn}" fill="#59dcff88"/>`);
+    if (k > 1) g.push(line(smooth(dl, k), v => mid - Math.max(-DCAP, Math.min(DCAP, v)) / DCAP * (hd / 2), dx, '#dcebf1', 1.4));
+  }
+  for (let t = 0; t <= n; t += 100) g.push(`<text x="${P + t * dx}" y="${yd + hd + 18}" fill="#7f9aab" font-size="10" text-anchor="${t === n ? 'end' : 'middle'}" ${MONO}>${t}</text>`);
+  if (S.edit) g.push(`<line x1="${P + S.edit.pos * dx}" x2="${P + S.edit.pos * dx}" y1="8" y2="${yd + hd}" stroke="#59dcff" stroke-dasharray="4 4"/>`);
+  if (S.sel != null) {
+    const [lo, hi] = lensRange(), xs = P + (S.sel + .5) * dx;
+    g.push(`<rect x="${P + lo * dx}" y="8" width="${Math.max(2, (hi - lo) * dx)}" height="${yd + hd - 8}" fill="#59dcff14" stroke="#59dcff66"/>`,
+           `<line x1="${xs}" x2="${xs}" y1="8" y2="${yd + hd}" stroke="#dcebf1"/>`,
+           `<path d="M${xs - 7},0h14l-7,10z" fill="#dcebf1"/>`);
+  }
+  const svg = $('#svg'); svg.setAttribute('viewBox', `0 0 ${W} ${total}`); svg.innerHTML = g.join('');
+}
+
+function renderLens() {
+  const svg = $('#lens');
+  if (!S.A || S.sel == null) { svg.innerHTML = ''; return; }
+  const [lo, hi] = lensRange(), cw = (W - LP) / LENS, list = currentOrfs();
+  const aB = bits(S.A.lp), bA = aligned();
+  const bBase = {}, bAA = {};
+  if (S.Bseq) {
+    const o = orfAt(list, S.sel) || list.find(o => o.s < hi && o.e > lo);
+    const bo = o ? a2b(o.s, S.edit) : null;
+    for (let j = 0; j < S.Bseq.length; j++) {
+      const a = b2a(j, S.edit); if (a == null || a < lo - 2 || a > hi + 2) continue;
+      bBase[a] = S.Bseq[j];
+      if (bo != null && j >= bo + 1 && (j - bo) % 3 === 1 && j + 1 < S.Bseq.length) bAA[a] = CODE[S.Bseq.substr(j - 1, 3)];
+    }
+  }
+  const Y = { a: 30, aaa: 54, abar: [64, 56], b: 150, baa: 174, bbar: [184, 56], d: [268, 42], pos: 344 };
+  const g = [];
+  const label = (t, y) => g.push(`<text x="0" y="${y}" fill="#a1bac9" font-size="11" ${MONO}>${t}</text>`);
+  label('A', Y.a); label('A protein', Y.aaa); label('A surprise', Y.abar[0] + 34);
+  label('B', Y.b); label('B protein', Y.baa); label('B surprise', Y.bbar[0] + 34); label('Δ B−A', Y.d[0] + 4);
+  g.push(`<line x1="${LP}" x2="${W}" y1="${Y.d[0]}" y2="${Y.d[0]}" stroke="#315365"/>`);
+  for (let a = lo; a < hi; a++) {
+    const x = LP + (a - lo) * cw, cx = x + cw / 2, o = orfAt(list, a);
+    if (o) { const fill = (a - o.s) % 3 === 0 ? '#133246' : '#0d2231'; g.push(`<rect x="${x}" y="8" width="${cw}" height="112" fill="${fill}"/><rect x="${x}" y="128" width="${cw}" height="112" fill="${fill}"/>`); }
+    if (a === S.sel) g.push(`<rect x="${x + 1}" y="4" width="${cw - 2}" height="${Y.pos - 12}" fill="none" stroke="#59dcff" stroke-width="2"/>`);
+    g.push(`<text x="${cx}" y="${Y.a}" text-anchor="middle" fill="#dcebf1" font-size="19" ${MONO}>${S.Aseq[a]}</text>`);
+    if (o && (a - o.s) % 3 === 1) g.push(`<text x="${cx}" y="${Y.aaa}" text-anchor="middle" fill="#a1bac9" font-size="13" ${MONO}>${CODE[S.Aseq.substr(a - 1, 3)]}</text>`);
+    const va = aB[a];
+    if (va != null) { const hh = Math.min(va, CAP) / CAP * Y.abar[1]; g.push(`<rect x="${x + 5}" y="${Y.abar[0] + Y.abar[1] - hh}" width="${cw - 10}" height="${Math.max(hh, .5)}" fill="#dcebf1bb"><title>A ${va.toFixed(2)} bits</title></rect>`); }
+    if (S.Bseq) {
+      const bl = bBase[a];
+      g.push(`<text x="${cx}" y="${Y.b}" text-anchor="middle" fill="${bl ? '#dcebf1' : '#ffb36b'}" font-size="19" ${MONO}>${bl ?? '–'}</text>`);
+      if (S.edit && S.edit.type === 'ins' && S.edit.pos === a) g.push(`<text x="${x}" y="${Y.b - 16}" text-anchor="middle" fill="#ffb36b" font-size="12" ${MONO}>+${S.edit.base}</text>`);
+      if (bAA[a]) g.push(`<text x="${cx}" y="${Y.baa}" text-anchor="middle" fill="${bAA[a] === '*' ? '#ffb36b' : '#a1bac9'}" font-size="13" ${MONO}>${bAA[a]}</text>`);
+      const vb = bA[a];
+      if (vb != null) { const hh = Math.min(vb, CAP) / CAP * Y.bbar[1]; g.push(`<rect x="${x + 5}" y="${Y.bbar[0] + Y.bbar[1] - hh}" width="${cw - 10}" height="${Math.max(hh, .5)}" fill="#dcebf1bb"><title>B ${vb.toFixed(2)} bits</title></rect>`); }
+      if (va != null && vb != null) {
+        const dv = vb - va, hh = Math.min(Math.abs(dv), DCAP) / DCAP * Y.d[1];
+        g.push(`<rect x="${x + 5}" y="${dv > 0 ? Y.d[0] - hh : Y.d[0]}" width="${cw - 10}" height="${Math.max(hh, .5)}" fill="${dv > 0 ? '#ffb36b' : '#59dcff'}"><title>Δ ${dv.toFixed(2)} bits</title></rect>`);
+      }
+    }
+    if ((a + 1) % 5 === 0 || a === S.sel) g.push(`<text x="${cx}" y="${Y.pos}" text-anchor="middle" fill="${a === S.sel ? '#59dcff' : '#7f9aab'}" font-size="10" ${MONO}>${a + 1}</text>`);
+  }
+  if (!S.Bseq) g.push(`<text x="${LP}" y="${Y.b}" fill="#7f9aab" font-size="13" ${MONO}>make an edit to see B</text>`);
+  svg.innerHTML = g.join('');
+}
+
+function renderSel() {
+  const a = S.sel, box = $('#edits');
+  if (a == null || !S.A) { box.innerHTML = ''; return; }
+  const base = S.Aseq[a], o = orfAt(currentOrfs(), a);
+  let t = `Base ${a + 1} of the window: <b>${base}</b>`;
+  if (o) { const c = Math.floor((a - o.s) / 3), cod = S.Aseq.substr(o.s + 3 * c, 3); t += cod.length === 3 ? ` · reading frame from ${o.s + 1}, codon ${c + 1}: ${cod} → ${AA3[CODE[cod]]}, position ${(a - o.s) % 3 + 1} of 3` : ' · codon cut off by the end of the window'; }
+  else t += ' · outside the open reading frames in this window';
+  const b = bits(S.A.lp)[a]; if (b != null) t += ` · Evo 2 surprise ${b.toFixed(2)} bits`;
+  $('#selinfo').innerHTML = t;
+  const dis = S.busy ? 'disabled' : '';
+  box.innerHTML = '<span>Swap</span>' + [...'ACGT'].filter(x => x !== base).map(x => `<button ${dis} data-ed="sub" data-b="${x}">${base}→${x}</button>`).join('')
+    + '<span>Insert before</span>' + [...'ACGT'].map(x => `<button ${dis} data-ed="ins" data-b="${x}">+${x}</button>`).join('')
+    + `<span>Delete</span><button ${dis} data-ed="del">delete ${base}</button>`;
+}
+
+let raf = 0;
+function refresh() { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; draw(); renderLens(); renderSel(); }); }
+function setBusy(v) { S.busy = v; renderSel(); $('#rescore').disabled = v || $('#status').className !== 'ready'; }
+
+async function scoreBaseline(seq, label) {
+  setBusy(true); $('#bsum').textContent = 'scoring baseline…';
+  try {
+    S.A = await api('/score', { seq, label }); S.Aseq = seq; S.Alabel = label; S.clean = true; S.ws = +$('#ws').value;
+    S.B = null; S.Bseq = ''; S.edit = null;
+    if (S.sel == null || S.sel >= seq.length) { const o = currentOrfs().find(o => o.s >= 0) || currentOrfs()[0]; S.sel = o ? Math.min(seq.length - 4, Math.max(0, o.s) + 60) : Math.floor(seq.length / 2); }
+    $('#bsum').textContent = `Baseline A scored in ${S.A.ms} ms.`;
+  } catch (e) { $('#bsum').textContent = 'Could not score: ' + e.message; }
+  setBusy(false); $('#keep').disabled = $('#clear').disabled = true; refresh();
+}
+
+async function scoreEdit(type, base) {
+  const a = S.sel, A = S.Aseq;
+  let seq, label;
+  if (type === 'sub') { seq = A.slice(0, a) + base + A.slice(a + 1); label = `swap ${a + 1} ${A[a]}→${base}`; }
+  else if (type === 'ins') { seq = A.slice(0, a) + base + A.slice(a); label = `insert ${base} before ${a + 1}`; }
+  else { seq = A.slice(0, a) + A.slice(a + 1); label = `delete ${A[a]} at ${a + 1}`; }
+  if (seq.length > MAX) { $('#bsum').textContent = `That would exceed ${MAX} bases; shorten the window.`; return; }
+  setBusy(true); $('#bsum').textContent = `scoring B: ${label}…`;
+  try {
+    const B = await api('/score', { seq, label: `${S.Alabel} | ${label}` });
+    S.B = B; S.Bseq = seq; S.edit = { type, pos: a, base };
+    let msg = `B = A with ${label} · scored in ${B.ms} ms.`;
+    const o = orfAt(currentOrfs(), a);
+    if (o) {
+      const st = o.s >= 0 ? o.s : o.s % 3 + 3 * Math.ceil(-o.s / 3);
+      const sa = firstStop(A, st), sb = firstStop(seq, a2b(st, S.edit));
+      msg += ` Reading frame from ${st + 1}: A reaches a stop at codon ${sa ?? '— (none in window)'}; B at codon ${sb ?? '— (none in window)'}.`;
+    }
+    { const aB = bits(S.A.lp), bA = aligned(); let sum = 0, c = 0, mx = 0;
+      for (let i = 1; i < S.edit.pos; i++) if (aB[i] != null && bA[i] != null) { const v = Math.abs(bA[i] - aB[i]); sum += v; c++; if (v > mx) mx = v; }
+      if (c >= 20) msg += ` Noise floor: before the edit, where nothing can have changed, Δ averages ${(sum / c).toFixed(3)} bits per base (largest ${mx.toFixed(2)}). Read Δ against that.`; }
+    $('#bsum').textContent = msg;
+    $('#keep').disabled = $('#clear').disabled = false;
+  } catch (e) { $('#bsum').textContent = 'Could not score: ' + e.message; }
+  setBusy(false); refresh();
+}
+
+function windowSeq() {
+  const wl = +$('#wl').value; let ws = Math.max(0, Math.min(FULL.length - wl, +$('#ws').value || 0));
+  $('#ws').value = ws; return [FULL.slice(ws, ws + wl), `ECOLAC ${ws + 1}–${ws + wl}`];
+}
+
+const ov = $('#svg'); let dragging = false;
+function selectFromOverview(e) {
+  if (!S.A) return; const r = ov.getBoundingClientRect(), n = S.Aseq.length;
+  const x = (e.clientX - r.left) / r.width * W;
+  S.sel = Math.max(0, Math.min(n - 1, Math.floor((x - P) / ((W - P) / n)))); refresh();
+}
+ov.addEventListener('pointerdown', e => { if (!S.A) return; ev('drag-overview'); dragging = true; ov.setPointerCapture(e.pointerId); selectFromOverview(e); });
+ov.addEventListener('pointermove', e => { if (dragging) selectFromOverview(e); });
+ov.addEventListener('pointerup', () => { dragging = false; });
+ov.addEventListener('pointercancel', () => { dragging = false; });
+$('#lens').addEventListener('click', e => {
+  if (!S.A || S.sel == null) return; const r = e.currentTarget.getBoundingClientRect();
+  const [lo, hi] = lensRange(), idx = Math.floor(((e.clientX - r.left) / r.width * W - LP) / ((W - LP) / LENS));
+  if (idx >= 0 && lo + idx < hi) { ev('click-lens'); S.sel = lo + idx; refresh(); }
+});
+function onKey(e) {
+  if (!S.A || S.sel == null) return; const step = e.shiftKey ? 10 : 1;
+  if (e.key === 'ArrowLeft') S.sel = Math.max(0, S.sel - step); else if (e.key === 'ArrowRight') S.sel = Math.min(S.Aseq.length - 1, S.sel + step); else return;
+  e.preventDefault(); ev('key-move', { key: e.key, shift: e.shiftKey }); refresh();
+}
+ov.addEventListener('keydown', onKey); $('#lens').addEventListener('keydown', onKey);
+$('#edits').addEventListener('click', e => { const b = e.target.closest('button[data-ed]'); if (b && !S.busy) { ev('edit', { type: b.dataset.ed, base: b.dataset.b }); scoreEdit(b.dataset.ed, b.dataset.b); } });
+$('#smooth').addEventListener('change', () => { ev('smooth', { value: $('#smooth').value }); refresh(); });
+$('#rescore').addEventListener('click', () => { ev('score-window', { ws: $('#ws').value, wl: $('#wl').value }); const [seq, label] = windowSeq(); S.sel = null; scoreBaseline(seq, label); });
+$('#keep').addEventListener('click', () => { if (!S.B) return; ev('keep'); S.clean = false; S.A = S.B; S.Aseq = S.Bseq; S.Alabel = `${S.Alabel} | edited`; S.B = null; S.Bseq = ''; S.edit = null; $('#keep').disabled = $('#clear').disabled = true; $('#bsum').textContent = 'B is now the baseline.'; refresh(); });
+$('#clear').addEventListener('click', () => { ev('clear'); S.B = null; S.Bseq = ''; S.edit = null; $('#keep').disabled = $('#clear').disabled = true; $('#bsum').textContent = ''; refresh(); });
+$('#quit').addEventListener('click', async () => { ev('quit'); try { await api('/quit', {}); } catch (e) {} const s = $('#status'); s.className = 'error'; s.textContent = 'Evo 2 stopped and the GPU is free. Relaunch to play again.'; $('#rescore').disabled = true; });
+
+try { const g = $('#guess'); g.value = localStorage.getItem('palimpsest.loop01.guess') || ''; let gt = 0; g.addEventListener('input', () => { try { localStorage.setItem('palimpsest.loop01.guess', g.value); } catch (e) {} clearTimeout(gt); gt = setTimeout(() => ev('guess', { chars: g.value.length }), 1200); }); } catch (e) {}
+
+async function poll() {
+  const s = $('#status');
+  try {
+    const st = await api('/status'); s.textContent = st.msg; s.className = st.state;
+    if (st.state === 'loading') return setTimeout(poll, 1500);
+    if (st.state === 'ready') { $('#rescore').disabled = false; ev('ready'); const [seq, label] = windowSeq(); scoreBaseline(seq, label); }
+  } catch (e) { s.className = 'error'; s.textContent = 'The Evo 2 server is not answering. Launch it again.'; }
+}
+(async () => { try { const d = await api('/seq'); FULL = d.seq; MAX = d.max_len; FULLORFS = orfs(FULL); ev('open', { w: innerWidth }); poll(); } catch (e) { const s = $('#status'); s.className = 'error'; s.textContent = 'The Evo 2 server is not answering. Launch it again.'; } })();
+</script>
+</body>
+</html>

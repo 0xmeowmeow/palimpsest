@@ -1,0 +1,195 @@
+[
+  {
+    "id": "boundary",
+    "question": "Where did my note go?",
+    "instrument": "Select a saved note, preview the request, and keep the resulting trace.",
+    "mechanisms": "Request/response boundaries; context assembly; roles; truncation; tool access; retrieval; application state versus parameters.",
+    "connects_to": [
+      "tokens",
+      "retrieval",
+      "tools"
+    ],
+    "references": [
+      {
+        "title": "Open WebUI: chat and files",
+        "url": "https://docs.openwebui.com/getting-started/quick-start/"
+      },
+      {
+        "title": "Ollama: inspect the chat request",
+        "url": "https://docs.ollama.com/api/chat"
+      }
+    ],
+    "status": "runnable bridge"
+  },
+  {
+    "id": "tokens",
+    "question": "Why did that tiny edit change the cost?",
+    "instrument": "Bring two texts whose small difference matters to your notebook. A tokenizer probe is the next instrument to build.",
+    "mechanisms": "Bytes, tokenisation, vocabulary, context length, embeddings, matrix dimensions.",
+    "connects_to": [
+      "counts",
+      "attention",
+      "inference"
+    ],
+    "references": [
+      {
+        "title": "Hugging Face: tokenizers",
+        "url": "https://huggingface.co/learn/llm-course/chapter2/4"
+      }
+    ],
+    "status": "available direction; instrument to build"
+  },
+  {
+    "id": "counts",
+    "question": "How far can a machine get by counting?",
+    "instrument": "Build a tiny transition generator around a chosen harmless corpus; keep its useful failure cases.",
+    "mechanisms": "Conditional probability, distributions, logits, softmax, entropy, cross-entropy, sampling; limited state.",
+    "connects_to": [
+      "attention",
+      "learning"
+    ],
+    "references": [
+      {
+        "title": "Hugging Face: language modelling routes",
+        "url": "https://huggingface.co/learn/llm-course/chapter7/1"
+      }
+    ],
+    "status": "available direction; instrument to build"
+  },
+  {
+    "id": "attention",
+    "question": "The clue is present. Can it affect this answer?",
+    "instrument": "Trace a small numerical computation and change one dependency.",
+    "mechanisms": "Position, causal masks, Q/K/V attention, residual paths, normalisation, feed-forward blocks and forward pass. Attention weights alone do not explain a real model.",
+    "connects_to": [
+      "learning",
+      "inference"
+    ],
+    "references": [
+      {
+        "title": "Attention Is All You Need (original paper)",
+        "url": "https://arxiv.org/abs/1706.03762"
+      }
+    ],
+    "status": "available direction; instrument to build"
+  },
+  {
+    "id": "learning",
+    "question": "Which numbers changed, and why?",
+    "instrument": "Train a tiny prediction mechanism with a held-out comparison; inspect a gradient rather than trusting the training story.",
+    "mechanisms": "Loss, derivatives, chain rule, backpropagation, gradient checking, optimisers, learning rate, train/validation split.",
+    "connects_to": [
+      "alignment",
+      "inference"
+    ],
+    "references": [
+      {
+        "title": "PyTorch: fundamentals of autograd",
+        "url": "https://docs.pytorch.org/tutorials/beginner/introyt/autogradyt_tutorial.html"
+      }
+    ],
+    "status": "available direction; instrument to build"
+  },
+  {
+    "id": "alignment",
+    "question": "Why do two fluent systems respond differently?",
+    "instrument": "Preserve controlled prompt/config comparisons; use a tiny tuning run only if it serves your question.",
+    "mechanisms": "Pretraining, supervised tuning, preference optimisation, alignment, inference versus parameter updates; limits of inference about vendor internals.",
+    "connects_to": [
+      "context",
+      "learning"
+    ],
+    "references": [
+      {
+        "title": "Hugging Face: language modelling routes",
+        "url": "https://huggingface.co/learn/llm-course/chapter7/1"
+      }
+    ],
+    "status": "available direction; instrument to build"
+  },
+  {
+    "id": "inference",
+    "question": "Why did the same request slow down or stop?",
+    "instrument": "Make a benchmark recipe from a real inconvenience and preserve quality as well as timing.",
+    "mechanisms": "Sampling, stochasticity, output limits, batching, memory, precision, quantisation, KV cache and context costs.",
+    "connects_to": [
+      "tokens",
+      "retrieval"
+    ],
+    "references": [
+      {
+        "title": "Ollama: inspect the chat request",
+        "url": "https://docs.ollama.com/api/chat"
+      }
+    ],
+    "status": "available direction; instrument to build"
+  },
+  {
+    "id": "retrieval",
+    "question": "Why did adding documents make this worse?",
+    "instrument": "Compare a known fact, revised fact, absent fact and conflicting source.",
+    "mechanisms": "Chunking, embeddings, similarity, retrieval, reranking, context injection, source attribution and conflict.",
+    "connects_to": [
+      "boundary",
+      "codex"
+    ],
+    "references": [
+      {
+        "title": "Open WebUI: chat and files",
+        "url": "https://docs.openwebui.com/getting-started/quick-start/"
+      }
+    ],
+    "status": "available direction; instrument to build"
+  },
+  {
+    "id": "tools",
+    "question": "The assistant says it did something. Did it?",
+    "instrument": "Follow an execution receipt through a small tool you actually want.",
+    "mechanisms": "Schemas, dispatch, validation, observations, agent loops, state, permissions, retry and stop conditions.",
+    "connects_to": [
+      "context",
+      "codex"
+    ],
+    "references": [
+      {
+        "title": "Ollama: inspect the chat request",
+        "url": "https://docs.ollama.com/api/chat"
+      }
+    ],
+    "status": "available direction; instrument to build"
+  },
+  {
+    "id": "context",
+    "question": "The skill is attached. Where did its effect go?",
+    "instrument": "Compare exact context bundles across sessions and keep a behavioural regression case.",
+    "mechanisms": "Instruction placement, lazy loading, context competition, instruction/data separation, memory selection, harness enforcement and evaluation limits.",
+    "connects_to": [
+      "boundary",
+      "tools"
+    ],
+    "references": [
+      {
+        "title": "Open WebUI: chat and files",
+        "url": "https://docs.openwebui.com/getting-started/quick-start/"
+      }
+    ],
+    "status": "runnable bridge"
+  },
+  {
+    "id": "codex",
+    "question": "Can this beautiful page still account for its claims?",
+    "instrument": "Compile selected exact revisions, including a failure and correction, then follow a claim back.",
+    "mechanisms": "Extraction versus synthesis, provenance, compression, retrieval quality, versioned builds, human correction.",
+    "connects_to": [
+      "retrieval",
+      "context"
+    ],
+    "references": [
+      {
+        "title": "Open WebUI: chat and files",
+        "url": "https://docs.openwebui.com/getting-started/quick-start/"
+      }
+    ],
+    "status": "runnable bridge"
+  }
+]
